@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini's Norrskenssida</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --aurora-color-1: rgba(30, 80, 150, 0.4);
+            --aurora-color-2: rgba(50, 150, 120, 0.4);
+            --aurora-color-3: rgba(150, 50, 120, 0.4);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000; /* Ändrad till helt svart */
+            color: #e0e0e0;
+            overflow: hidden; /* Förhindrar scrollning av hela sidan */
+        }
+        /* Norrskenseffekt */
+        .aurora-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse at 50% 0%, var(--aurora-color-1) 0%, rgba(0, 0, 0, 0) 60%),
+                        radial-gradient(ellipse at 10% 100%, var(--aurora-color-2) 0%, rgba(0, 0, 0, 0) 50%),
+                        radial-gradient(ellipse at 90% 100%, var(--aurora-color-3) 0%, rgba(0, 0, 0, 0) 50%);
+            animation: aurora 20s infinite linear;
+            transition: background 1.5s ease-in-out;
+        }
+        @keyframes aurora {
+            0% { transform: rotate(0deg) scale(1.5); }
+            50% { transform: rotate(180deg) scale(1.6); }
+            100% { transform: rotate(360deg) scale(1.5); }
+        }
+        /* Anpassad vertikal scrollbar */
+        .main-content::-webkit-scrollbar,
+        .genre-grid-container::-webkit-scrollbar { /* Gäller även genre-grid */
+            width: 8px;
+        }
+        .main-content::-webkit-scrollbar-track,
+        .genre-grid-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .main-content::-webkit-scrollbar-thumb,
+        .genre-grid-container::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.6);
+            border-radius: 10px;
+        }
+        .main-content::-webkit-scrollbar-thumb:hover,
+        .genre-grid-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.8);
+        }
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-weight: 500;
+        }
+        /* Scroll Snap-funktionalitet */
+        .scroll-container {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+        .scroll-section {
+            scroll-snap-align: start;
+        }
+        /* Stil för dropdown */
+        select {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        select option {
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+        }
+        /* Anpassning för att texten ska rymmas bättre i hover-rutan */
+        .line-clamp-3 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+        }
+        .group:hover .line-clamp-3 {
+             -webkit-line-clamp: unset; /* Ta bort begränsning vid hover om mer text behövs */
+             max-height: 5rem; /* Eller annan höjd som passar */
+             overflow-y: auto; /* Lägg till scroll om texten ändå är för lång */
+        }
+         .info-box-details {
+             opacity: 0;
+             transition: opacity 0.3s ease-in-out 0.1s; /* Matchar delay */
+         }
+         .group:hover .info-box-details {
+             opacity: 1;
+         }
+
+    </style>
+</head>
+<body class="antialiased">
+    <div class="aurora-bg"></div>
+
+    <div class="flex h-screen">
+        <!-- Sidomeny för navigation -->
+        <aside class="w-64 bg-black bg-opacity-70 backdrop-blur-md p-6 flex-shrink-0 relative z-20">
+            <h1 class="text-2xl font-bold text-gray-300 mb-12">
+                Film Klubben
+            </h1>
+            <nav>
+                <ul class="space-y-3">
+                    <li><a href="#start" class="nav-link block py-3 px-4 rounded-lg transition-all duration-200 hover:bg-white hover:bg-opacity-10">Start</a></li>
+                    <li><a href="#blogg" class="nav-link block py-3 px-4 rounded-lg transition-all duration-200 hover:bg-white hover:bg-opacity-10">Blogg</a></li>
+                    <li><a href="#filmklubben" class="nav-link block py-3 px-4 rounded-lg transition-all duration-200 hover:bg-white hover:bg-opacity-10">Dagens Rekommendationer</a></li>
+                    <li><a href="#genre-val" class="nav-link block py-3 px-4 rounded-lg transition-all duration-200 hover:bg-white hover:bg-opacity-10">Välj Genre</a></li>
+                    <li><a href="#lankar" class="nav-link block py-3 px-4 rounded-lg transition-all duration-200 hover:bg-white hover:bg-opacity-10">Länkar</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Huvudinnehåll med scroll-snap -->
+        <main id="main-content" class="main-content flex-1 overflow-y-auto h-screen scroll-container">
+            
+            <section id="start" class="page-content scroll-section h-screen flex flex-col justify-center p-8 md:p-12">
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">Välkommen till Filmklubben!</h2>
+                <p class="text-lg text-gray-300 max-w-2xl">
+                    Här hittar du dagliga filmrekommendationer för att inspirera till din nästa filmkväll.
+                    Utforska våra utvalda filmer under "Dagens Rekommendationer" och använd "Länkar" för att hitta betyg och recensioner.
+                </p>
+            </section>
+
+            <section id="blogg" class="page-content scroll-section h-screen flex flex-col justify-center p-8 md:p-12">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Blogg: Skapelseprompten</h2>
+                    <p class="text-lg text-gray-300 mb-6">Här är prompten som användes för att generera den här hemsidan:</p>
+                    <div class="bg-black bg-opacity-40 p-6 rounded-xl border border-gray-700">
+                        <pre class="text-gray-200 whitespace-pre-wrap text-sm md:text-base"><code>i need a website created my gemini and i want it to be complex and not be a white screen only but some nice gui and follow these instructions carfully and make the site beautyful now follow these instructions: Tre undersidor:
+Blogg, som innehåller prompten som skapade hemsidan
+Filmklubben med länkar som leder vidare
+Länkar, till övriga i klassen
+En viss stil eller design som förmedlats via prompten.
+
+Hemsidan ska inte ha:
+Fotografier
+Bilder som föreställer människor</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="filmklubben" class="page-content scroll-section h-screen flex flex-col justify-center p-8 md:p-12">
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-8">Dagens Rekommendationer</h2>
+                <div id="movie-grid" class="relative"></div>
+            </section>
+            
+            <section id="genre-val" class="page-content scroll-section h-screen flex flex-col p-8 md:p-12">
+                 <h2 class="text-4xl md:text-5xl font-bold text-white mt-8 mb-8 flex-shrink-0">Välj Genre</h2>
+                 <div class="mb-6 flex-shrink-0">
+                     <label for="genre-select" class="block text-lg font-medium text-gray-300 mb-2">Genre:</label>
+                     <select id="genre-select" name="genre-select" class="block w-full max-w-xs p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                         <option value="">Välj genre...</option>
+                         <option value="Action">Action</option>
+                         <option value="Drama">Drama</option>
+                         <option value="Sci-Fi">Sci-Fi</option>
+                         <option value="Komedi">Komedi</option>
+                         <option value="Skräck">Skräck</option> 
+                         <option value="Äventyr">Äventyr</option>
+                         <option value="Fantasy">Fantasy</option>
+                         <option value="Kriminal">Kriminal</option>
+                         <option value="Romantik">Romantik</option>
+                         <option value="Animation">Animation</option>
+                         <option value="Thriller">Thriller</option> 
+                         <option value="Mysterium">Mysterium</option> 
+                     </select>
+                 </div>
+                 <div class="flex-grow overflow-y-auto genre-grid-container pr-4 pb-8"> 
+                     <div id="genre-movie-grid" class="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                          <p id="genre-placeholder" class="text-gray-400 col-span-full">Välj en genre för att se filmer.</p>
+                     </div>
+                 </div>
+            </section>
+
+            <section id="lankar" class="page-content scroll-section h-screen flex flex-col justify-center p-8 md:p-12">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-bold text-white mb-8">Filmresurser</h2>
+                    
+                    <!-- Betyg & Recensioner -->
+                    <h3 class="text-2xl font-semibold text-white mb-4">Betyg & Recensioner</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <a href="https://www.imdb.com/" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-4 bg-black bg-opacity-40 p-4 rounded-xl border border-gray-800 hover:border-gray-500 transition-all duration-300">
+                            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" alt="IMDb logo" class="h-6 w-auto">
+                            </div>
+                            <div><h3 class="font-semibold text-white">IMDb</h3><p class="text-sm text-gray-400">Internet Movie Database</p></div>
+                        </a>
+                        <a href="https://www.rottentomatoes.com/" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-4 bg-black bg-opacity-40 p-4 rounded-xl border border-gray-800 hover:border-gray-500 transition-all duration-300">
+                            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/5b/Rotten_Tomatoes.svg" alt="Rotten Tomatoes logo" class="h-8 w-auto">
+                            </div>
+                            <div><h3 class="font-semibold text-white">Rotten Tomatoes</h3><p class="text-sm text-gray-400">Recensioner från kritiker och publik</p></div>
+                        </a>
+                    </div>
+
+                    <!-- Titta Gratis -->
+                    <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Titta Gratis</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <a href="https://www.svtplay.se/" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-4 bg-black bg-opacity-40 p-4 rounded-xl border border-gray-800 hover:border-gray-500 transition-all duration-300">
+                            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/SVT_Play_2022.svg/512px-SVT_Play_2022.svg.png" alt="SVT Play logo" class="h-8 w-auto">
+                            </div>
+                            <div><h3 class="font-semibold text-white">SVT Play</h3><p class="text-sm text-gray-400">Public service-utbud</p></div>
+                        </a>
+                        <a href="https://www.tv4play.se/" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-4 bg-black bg-opacity-40 p-4 rounded-xl border border-gray-800 hover:border-gray-500 transition-all duration-300">
+                            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/TV4_Play_2021.svg" alt="TV4 Play logo" class="h-6 w-auto">
+                            </div>
+                            <div><h3 class="font-semibold text-white">TV4 Play</h3><p class="text-sm text-gray-400">Gratis med reklam</p></div>
+                        </a>
+                    </div>
+
+                    <!-- Betalda Tjänster -->
+                    <h3 class="text-2xl font-semibold text-white mt-8 mb-4">Betalda Tjänster</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <a href="https://www.netflix.com/" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-4 bg-black bg-opacity-40 p-4 rounded-xl border border-gray-800 hover:border-gray-500 transition-all duration-300">
+                            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Netflix_2015_N_logo.svg/1200px-Netflix_2015_N_logo.svg.png" alt="Netflix logo" class="h-8 w-auto">
+                            </div>
+                            <div><h3 class="font-semibold text-white">Netflix</h3><p class="text-sm text-gray-400">Streaming av filmer och serier</p></div>
+                        </a>
+                        <a href="https://www.disneyplus.com/" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-4 bg-black bg-opacity-40 p-4 rounded-xl border border-gray-800 hover:border-gray-500 transition-all duration-300">
+                            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Disney%2B_logo.svg/2560px-Disney%2B_logo.svg.png" alt="Disney+ logo" class="h-6 w-auto">
+                            </div>
+                            <div><h3 class="font-semibold text-white">Disney+</h3><p class="text-sm text-gray-400">Originals från Disney, Pixar, Marvel</p></div>
+                        </a>
+                        <a href="https://www.hbomax.com/" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-4 bg-black bg-opacity-40 p-4 rounded-xl border border-gray-800 hover:border-gray-500 transition-all duration-300">
+                            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/HBO_Max_Logo.svg/2560px-HBO_Max_Logo.svg.png" alt="HBO Max logo" class="h-3 w-auto">
+                            </div>
+                            <div><h3 class="font-semibold text-white">HBO Max</h3><p class="text-sm text-gray-400">Serier och filmer från Warner Bros.</p></div>
+                        </a>
+                        <a href="https://www.amazon.se/primevideo" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-4 bg-black bg-opacity-40 p-4 rounded-xl border border-gray-800 hover:border-gray-500 transition-all duration-300">
+                            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video.svg" alt="Prime Video logo" class="h-5 w-auto">
+                            </div>
+                            <div><h3 class="font-semibold text-white">Prime Video</h3><p class="text-sm text-gray-400">Ingår med Amazon Prime</p></div>
+                        </a>
+                        <a href="https://viaplay.se/" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-4 bg-black bg-opacity-40 p-4 rounded-xl border border-gray-800 hover:border-gray-500 transition-all duration-300">
+                            <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Viaplay_logo.svg" alt="Viaplay logo" class="h-4 w-auto">
+                            </div>
+                            <div><h3 class="font-semibold text-white">Viaplay</h3><p class="text-sm text-gray-400">Nordiska och internationella serier</p></div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pages = document.querySelectorAll('.page-content');
+            const mainContent = document.getElementById('main-content');
+            const genreSelect = document.getElementById('genre-select');
+            const genreMovieGrid = document.getElementById('genre-movie-grid');
+             const genrePlaceholder = document.getElementById('genre-placeholder');
+
+            const sectionColors = {
+                start: ['rgba(30, 80, 150, 0.4)', 'rgba(50, 150, 120, 0.4)', 'rgba(150, 50, 120, 0.4)'],
+                blogg: ['rgba(180, 60, 90, 0.4)', 'rgba(200, 120, 50, 0.4)', 'rgba(90, 180, 120, 0.4)'],
+                filmklubben: ['rgba(50, 180, 100, 0.4)', 'rgba(100, 100, 200, 0.4)', 'rgba(180, 100, 50, 0.4)'],
+                'genre-val': ['rgba(150, 50, 120, 0.4)', 'rgba(80, 120, 200, 0.4)', 'rgba(200, 80, 80, 0.4)'],
+                lankar: ['rgba(200, 100, 100, 0.4)', 'rgba(100, 200, 100, 0.4)', 'rgba(100, 100, 200, 0.4)']
+            };
+
+             const allAvailableMovies = [ // Större och mer varierad lista med filmer
+                 // Drama
+                 { realTitle: "Nyckeln till frihet", link: "https://www.imdb.com/title/tt0111161/", description: "Två fängslade män finner hopp och vänskap under en lång och svår tid.", color: "amber", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg", genre: "Drama", ageRating: "15 år", imdbRating: "9.3/10", streaming: { paid: ["Viaplay", "HBO Max", "Prime Video"], free: [] }},
+                 { realTitle: "Gudfadern", link: "https://www.imdb.com/title/tt0068646/", description: "En maffiaboss överför kontrollen av sitt imperium till sin motvillige son.", color: "gray", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/3bhkrj58Vtu7enYsRolD1fZdja1.jpg", genre: "Drama, Kriminal", ageRating: "15 år", imdbRating: "9.2/10", streaming: { paid: ["Prime Video", "Viaplay", "HBO Max"], free: [] }},
+                 { realTitle: "Fight Club", link: "https://www.imdb.com/title/tt0137523/", description: "En uttråkad kontorsarbetare startar en hemlig fight club som snabbt spårar ur.", color: "pink", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg", genre: "Drama", ageRating: "15 år", imdbRating: "8.8/10", streaming: { paid: ["Netflix", "Prime Video", "Disney+"], free: [] }},
+                 { realTitle: "Forrest Gump", link: "https://www.imdb.com/title/tt0109830/", description: "En man med låg IQ råkar påverka flera stora historiska händelser i USA.", color: "green", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg", genre: "Drama, Romantik", ageRating: "11 år", imdbRating: "8.8/10", streaming: { paid: ["Netflix", "Viaplay", "Prime Video"], free: [] }},
+                 { realTitle: "12 edsvurna män", link: "https://www.imdb.com/title/tt0050083/", description: "En jurymedlem försöker förhindra ett justitiemord genom att tvinga sina kollegor att ompröva bevisen.", color: "gray", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/almostAEO0Nz5LdYcd0VzaA0gqMLr.jpg", genre: "Drama", ageRating: "11 år", imdbRating: "9.0/10", streaming: { paid: ["Prime Video"], free: [] }},
+                 { realTitle: "Schindler's List", link: "https://www.imdb.com/title/tt0108052/", description: "Oskar Schindler oroar sig för sin judiska arbetskraft efter att ha bevittnat deras förföljelse i Polen.", color: "red", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg", genre: "Drama, Biografi, Historia", ageRating: "15 år", imdbRating: "9.0/10", streaming: { paid: ["Viaplay", "Prime Video"], free: [] }},
+                 { realTitle: "Green Book", link: "https://www.imdb.com/title/tt6966692/", description: "En italiensk-amerikansk dörrvakt blir chaufför åt en afroamerikansk klassisk pianist på en turné genom södra USA.", color: "green", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/7BsvSuDQuoqhWmU2fL7W2GOcZHU.jpg", genre: "Drama, Biografi, Komedi", ageRating: "11 år", imdbRating: "8.2/10", streaming: { paid: ["Viaplay"], free: [] }},
+                 { realTitle: "Joker", link: "https://www.imdb.com/title/tt7286456/", description: "I Gotham City 1981 kämpar en plågad komiker vid namn Arthur Fleck för att hitta sin väg i samhället.", color: "purple", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg", genre: "Drama, Thriller, Kriminal", ageRating: "15 år", imdbRating: "8.4/10", streaming: { paid: ["HBO Max", "Viaplay", "Netflix"], free: [] }},
+                  { realTitle: "Whiplash", link: "https://www.imdb.com/title/tt2582802/", description: "En lovande ung trummis studerar på en prestigefylld musikhögskola under ledning av en hänsynslös instruktör.", color: "orange", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/7fn624j5lj3xTme2SgiLCeuedmt.jpg", genre: "Drama, Musik", ageRating: "11 år", imdbRating: "8.5/10", streaming: { paid: ["Netflix"], free: [] }},
+                 // Action
+                 { realTitle: "The Dark Knight", link: "https://www.imdb.com/title/tt0468569/", description: "Batman ställs inför sin största utmaning när den kaotiska Jokern terroriserar Gotham.", color: "indigo", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/qJ2tW6WMUDux911r6m7haRef0WH.jpg", genre: "Action, Kriminal, Drama", ageRating: "15 år", imdbRating: "9.0/10", streaming: { paid: ["HBO Max", "Viaplay", "Netflix"], free: [] }},
+                 { realTitle: "Inception", link: "https://www.imdb.com/title/tt1375666/", description: "En tjuv som stjäl information genom att tränga in i det undermedvetna.", color: "red", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/oYuLEt3zVCKq27gApcjBJU3GZp.jpg", genre: "Action, Äventyr, Sci-Fi", ageRating: "11 år", imdbRating: "8.8/10", streaming: { paid: ["HBO Max", "Viaplay"], free: [] }},
+                 { realTitle: "Mad Max: Fury Road", link: "https://www.imdb.com/title/tt1392190/", description: "I en postapokalyptisk ödemark slår Max ihop sig med Furiosa för att fly från en tyrann.", color: "orange", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/8tZYtuWezp855EKorLrfvrYRihv.jpg", genre: "Action, Äventyr, Sci-Fi", ageRating: "15 år", imdbRating: "8.1/10", streaming: { paid: ["HBO Max", "Viaplay"], free: [] }},
+                 { realTitle: "John Wick", link: "https://www.imdb.com/title/tt2911666/", description: "En före detta yrkesmördare ger sig ut på en hämndaktion mot gangstrarna som tog allt ifrån honom.", color:"gray", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/fZPSd91yGE9fCcCe6OoQr6E3Bev.jpg", genre: "Action, Thriller, Kriminal", ageRating: "15 år", imdbRating: "7.4/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 { realTitle: "Gladiator", link: "https://www.imdb.com/title/tt0172495/", description: "En före detta romersk general söker hämnd mot den korrupta kejsaren som mördade hans familj.", color: "amber", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/ty8TGRuvJLPUmAR1H1nRIsgwvim.jpg", genre: "Action, Drama, Äventyr", ageRating: "15 år", imdbRating: "8.5/10", streaming: { paid: ["Netflix", "Viaplay", "Prime Video"], free: [] }},
+                 { realTitle: "Die Hard", link: "https://www.imdb.com/title/tt0095016/", description: "En polis från New York försöker rädda sin fru och flera andra som tagits som gisslan under en julfest.", color: "red", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/yFihWxQcmqcaBR31QM6Y8gT6aYV.jpg", genre: "Action, Thriller", ageRating: "15 år", imdbRating: "8.2/10", streaming: { paid: ["Disney+"], free: [] }},
+                 { realTitle: "Kill Bill: Vol. 1", link: "https://www.imdb.com/title/tt0266697/", description: "Efter att ha vaknat ur en fyraårig koma söker en före detta lönnmördare hämnd på teamet av lönnmördare som förrådde henne.", color:"yellow", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/v7TaX8kXMXs5yFFGR41guUDNcnB.jpg", genre: "Action, Kriminal", ageRating: "15 år", imdbRating: "8.2/10", streaming: { paid: ["Viaplay", "HBO Max"], free: [] }},
+                 { realTitle: "Edge of Tomorrow", link: "https://www.imdb.com/title/tt1631867/", description: "En soldat som slåss mot utomjordingar återupplever samma dag om och om igen.", color:"blue", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/tpoZv9t4l838Lcs7tiz8PA4mEVE.jpg", genre: "Action, Sci-Fi", ageRating: "11 år", imdbRating: "7.9/10", streaming: { paid: ["Viaplay"], free: [] }},
+                 // Sci-Fi
+                 { realTitle: "Blade Runner 2049", link: "https://www.imdb.com/title/tt1856101/", description: "En ung Blade Runner upptäcker en hemlighet som hotar att kasta samhället i kaos.", color: "cyan", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg", genre: "Sci-Fi, Action, Mysterium", ageRating: "15 år", imdbRating: "8.0/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 { realTitle: "Arrival", link: "https://www.imdb.com/title/tt2543164/", description: "En lingvist rekryteras för att hjälpa till att kommunicera med utomjordiska farkoster.", color: "purple", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/x2FJsf1ElAgr63Y3PNs7GkKzJr.jpg", genre: "Sci-Fi, Drama, Mysterium", ageRating: "7 år", imdbRating: "7.9/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 { realTitle: "Ex Machina", link: "https://www.imdb.com/title/tt0470752/", description: "En ung programmerare väljs ut för att delta i ett banbrytande AI-experiment.", color: "pink", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/adKStLsq8kHTsddZp9OASoWE5fs.jpg", genre: "Sci-Fi, Drama, Thriller", ageRating: "11 år", imdbRating: "7.7/10", streaming: { paid: ["Viaplay"], free: [] }},
+                 { realTitle: "Dune", link: "https://www.imdb.com/title/tt1160419/", description: "En ädel familj dras in i ett krig om kontrollen över galaxens mest värdefulla tillgång.", color:"orange", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/d5NXSklXo0qyIYkgV94XAgMIckC.jpg", genre: "Sci-Fi, Äventyr, Drama", ageRating: "11 år", imdbRating: "8.0/10", streaming: { paid: ["HBO Max", "Viaplay"], free: [] }},
+                 { realTitle: "Children of Men", link: "https://www.imdb.com/title/tt0206634/", description: "I en kaotisk framtid där kvinnor blivit ofruktsamma måste en före detta aktivist hjälpa en mirakulöst gravid kvinna.", color:"gray", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/k9IAS4TehY8f3XGWsp3a0fQ4Vtq.jpg", genre: "Sci-Fi, Drama, Thriller", ageRating: "15 år", imdbRating: "7.9/10", streaming: { paid: ["Prime Video"], free: [] }},
+                 { realTitle: "District 9", link: "https://www.imdb.com/title/tt1136608/", description: "Utomjordingar tvingas leva under slumliknande förhållanden på jorden och finner en oväntad allierad.", color:"yellow", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/4PmMPG3QeY6UbnZcGFCmAVg3MvS.jpg", genre: "Sci-Fi, Action, Thriller", ageRating: "15 år", imdbRating: "7.9/10", streaming: { paid: ["Netflix"], free: [] }},
+                 { realTitle: "Interstellar", link: "https://www.imdb.com/title/tt0816692/", description: "Ett team reser genom ett maskhål i rymden för att rädda mänskligheten.", color: "cyan", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg", genre: "Sci-Fi, Äventyr, Drama", ageRating: "11 år", imdbRating: "8.7/10", streaming: { paid: ["Viaplay", "Prime Video", "HBO Max"], free: [] }},
+                 { realTitle: "Minority Report", link: "https://www.imdb.com/title/tt0181689/", description: "I en framtid där polisen kan förutse brott innan de sker, anklagas en av deras egna för ett framtida mord.", color:"blue", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/ccqpHq5tk5W4ymbSbuoy4uYOxFI.jpg", genre: "Sci-Fi, Action, Mysterium", ageRating: "11 år", imdbRating: "7.7/10", streaming: { paid: ["Disney+"], free: [] }},
+                 // Komedi
+                 { realTitle: "Parasite", link: "https://www.imdb.com/title/tt6751668/", description: "Girighet och klassdiskriminering hotar relationen mellan den rika familjen Park och den fattiga familjen Kim.", color: "yellow", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg", genre: "Komedi, Drama, Thriller", ageRating: "15 år", imdbRating: "8.5/10", streaming: { paid: ["Viaplay"], free: ["SVT Play"] }},
+                 { realTitle: "Superbad", link: "https://www.imdb.com/title/tt0829482/", description: "Två oskiljaktiga high school-seniorer tvingas hantera separationsångest efter att deras collegeplaner hotar att sätta dem på olika vägar.", color:"yellow", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/ek8oQ4HCTwN7xe6QKg4QhhGKc5c.jpg", genre: "Komedi", ageRating: "11 år", imdbRating: "7.6/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 { realTitle: "The Hangover", link: "https://www.imdb.com/title/tt1119646/", description: "Tre kompisar vaknar upp efter en svensexa i Las Vegas utan minne av föregående natt och med brudgummen försvunnen.", color:"green", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/lvrwPGUlRW7PxMX74kS03jNjpwY.jpg", genre: "Komedi", ageRating: "11 år", imdbRating: "7.7/10", streaming: { paid: ["HBO Max", "Viaplay", "Netflix"], free: [] }},
+                 { realTitle: "Booksmart", link: "https://www.imdb.com/title/tt1489887/", description: "På kvällen före examen inser två akademiska superstjärnor att de borde ha jobbat mindre och festat mer.", color: "blue", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/tlkVIhf8G1Qsu0O3eKlJoVxMSdB.jpg", genre: "Komedi", ageRating: "11 år", imdbRating: "7.1/10", streaming: { paid: ["Viaplay"], free: [] }},
+                 { realTitle: "Shaun of the Dead", link: "https://www.imdb.com/title/tt0365748/", description: "En man bestämmer sig för att vända sitt liv under en zombieapokalyps.", color:"red", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/jjTtGJN1EqyKaUMoS4Qc9N9wZR1.jpg", genre: "Komedi, Skräck", ageRating: "15 år", imdbRating: "7.9/10", streaming: { paid: ["Prime Video"], free: [] }},
+                 { realTitle: "Paddington 2", link: "https://www.imdb.com/title/tt4468740/", description: "Paddington tar på sig ströjobb för att köpa den perfekta presenten till sin moster Lucy.", color:"blue", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/4P84crtxQ9XEBKd9N3Hu2348mY.jpg", genre: "Komedi, Familj, Äventyr", ageRating: "7 år", imdbRating: "7.8/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 { realTitle: "Scott Pilgrim vs. the World", link: "https://www.imdb.com/title/tt0446029/", description: "En basist måste besegra sin nya flickväns sju onda ex för att vinna hennes hjärta.", color:"purple", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/8UJ4gdzaTLpxE0hJ48LidM3zJvN.jpg", genre: "Komedi, Action, Fantasy", ageRating: "11 år", imdbRating: "7.5/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 { realTitle: "Little Miss Sunshine", link: "https://www.imdb.com/title/tt0449059/", description: "En familj bestämmer sig för att resa tvärs över landet för att få sin dotter till finalen i en skönhetstävling.", color:"yellow", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/8RKBHHRqOMOLh5qW3yS3hPKUuYi.jpg", genre: "Komedi, Drama", ageRating: "7 år", imdbRating: "7.8/10", streaming: { paid: ["Disney+"], free: [] }},
+                 // Skräck
+                 { realTitle: "Get Out", link: "https://www.imdb.com/title/tt5052448/", description: "En ung afroamerikansk man besöker sin vita flickväns föräldrar för helgen, där hans sjudande oro över deras mottagande till slut når en kokpunkt.", color:"red", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/1SwAVYpuM8MdYiVbuejoppspKcR.jpg", genre: "Skräck, Mysterium, Thriller", ageRating: "15 år", imdbRating: "7.7/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 { realTitle: "Hereditary", link: "https://www.imdb.com/title/tt7784604/", description: "En sörjande familj hemsöks av tragiska och störande händelser efter deras matriarks död.", color:"gray", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/4GFPuL14eXi66V96xBWY73Y9Iel.jpg", genre: "Skräck, Drama, Mysterium", ageRating: "15 år", imdbRating: "7.3/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 { realTitle: "The Conjuring", link: "https://www.imdb.com/title/tt1457767/", description: "Paranormala utredare Ed och Lorraine Warren arbetar för att hjälpa en familj som terroriseras av en mörk närvaro.", color:"blue", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/z09UQjA949YpQ5kKNQ0z8s29xV.jpg", genre: "Skräck, Mysterium, Thriller", ageRating: "15 år", imdbRating: "7.5/10", streaming: { paid: ["HBO Max", "Netflix"], free: [] }},
+                 { realTitle: "A Quiet Place", link: "https://www.imdb.com/title/tt6644200/", description: "En familj måste leva i tystnad för att gömma sig från monster med ultrakänslig hörsel.", color:"amber", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/nAU74GmpUk7t5iklEp3bufwDq4n.jpg", genre: "Skräck, Drama, Sci-Fi", ageRating: "15 år", imdbRating: "7.5/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 { realTitle: "It", link: "https://www.imdb.com/title/tt1396484/", description: "En grupp barn går samman för att förgöra ett formskiftande monster som jagar barn.", color:"red", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/9E2y5Q7WlCVNEhP5GiNqDQVg6Hw.jpg", genre: "Skräck, Fantasy", ageRating: "15 år", imdbRating: "7.3/10", streaming: { paid: ["HBO Max", "Viaplay"], free: [] }},
+                 { realTitle: "The Babadook", link: "https://www.imdb.com/title/tt2321549/", description: "En ensamstående mor plågas av sin sons rädsla för ett monster som lurar i huset.", color:"gray", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/b4Q8mk5QCM0jjFgcWtaS6nXe7vA.jpg", genre: "Skräck, Drama", ageRating: "15 år", imdbRating: "6.8/10", streaming: { paid: ["Prime Video"], free: [] }},
+                 { realTitle: "Psycho", link: "https://www.imdb.com/title/tt0054215/", description: "En sekreterare förskingrar pengar och hamnar på ett avlägset motell som drivs av en ung man under sin mors dominans.", color:"black", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/81d8oyEFgj7FU9VgJG3JvznadO.jpg", genre: "Skräck, Mysterium, Thriller", ageRating: "15 år", imdbRating: "8.5/10", streaming: { paid: ["Viaplay"], free: [] }},
+                 { realTitle: "The Exorcist", link: "https://www.imdb.com/title/tt0070047/", description: "När en ung flicka blir besatt av en mystisk entitet, söker hennes mor hjälp från två präster.", color:"blue", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/4ucLGcXVVSVnsfkGtbLY4XAAb6L.jpg", genre: "Skräck", ageRating: "15 år", imdbRating: "8.1/10", streaming: { paid: ["Viaplay"], free: [] }},
+                 // Äventyr
+                 { realTitle: "Indiana Jones och jakten på den försvunna skatten", link: "https://www.imdb.com/title/tt0082971/", description: "Arkeologen och äventyraren Indiana Jones anlitas för att hitta Förbundsarken före nazisterna.", color: "orange", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/ceG9VzoRAVGwivFU403Wc3AHRys.jpg", genre: "Äventyr, Action", ageRating: "11 år", imdbRating: "8.4/10", streaming: { paid: ["Disney+", "Viaplay"], free: [] }},
+                 { realTitle: "Jurassic Park", link: "https://www.imdb.com/title/tt0107290/", description: "En pragmatisk paleontolog som besöker en nöjespark med klonade dinosaurier får i uppdrag att skydda barnen efter ett strömavbrott.", color:"green", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/oU7Oq2kFAAlGqbU4VoAE36g4hoI.jpg", genre: "Äventyr, Sci-Fi", ageRating: "11 år", imdbRating: "8.2/10", streaming: { paid: ["Netflix", "Viaplay", "Prime Video"], free: [] }},
+                 { realTitle: "Sagan om konungens återkomst", link: "https://www.imdb.com/title/tt0167260/", description: "Gandalf och Aragorn leder människorna mot Saurons armé för att distrahera honom från Frodo och Sam.", color: "green", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg", genre: "Äventyr, Fantasy, Action", ageRating: "11 år", imdbRating: "9.0/10", streaming: { paid: ["HBO Max", "Viaplay"], free: [] }},
+                 { realTitle: "Pirates of the Caribbean: Svarta Pärlans förbannelse", link: "https://www.imdb.com/title/tt0325980/", description: "Smeden Will Turner slår sig ihop med kapten Jack Sparrow för att rädda sin kärlek, guvernörens dotter.", color:"brown", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/z8onk7LV9Mmw6zKz4hT6pzzvmvl.jpg", genre: "Äventyr, Action, Fantasy", ageRating: "11 år", imdbRating: "8.1/10", streaming: { paid: ["Disney+"], free: [] }},
+                 // Fantasy
+                 { realTitle: "Pans Labyrint", link: "https://www.imdb.com/title/tt0457430/", description: "I det falangistiska Spanien 1944 flyr en ung styvdotter till en sadistisk arméofficer in i en kuslig men fängslande fantasivärld.", color:"green", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/dSSDuPT412yYFrk1lweZCPhVGtM.jpg", genre: "Fantasy, Drama, Krig", ageRating: "15 år", imdbRating: "8.2/10", streaming: { paid: ["Netflix"], free: [] }},
+                 { realTitle: "Harry Potter och de vises sten", link: "https://www.imdb.com/title/tt0241527/", description: "En föräldralös pojke upptäcker på sin elfte födelsedag att han är en trollkarl och bjuds in att studera vid Hogwarts.", color: "purple", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/wuMc08IPKEatf9rnMNXvIDxqP4W.jpg", genre: "Fantasy, Äventyr, Familj", ageRating: "11 år", imdbRating: "7.6/10", streaming: { paid: ["HBO Max", "Viaplay"], free: [] }},
+                 { realTitle: "Stardust", link: "https://www.imdb.com/title/tt0486655/", description: "I en by på gränsen till ett magiskt land ger sig en ung man in i det okända riket för att hämta en fallen stjärna till sin älskade.", color: "blue", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/7pyeVDIwsJHaHhSgQxX9hC4T84l.jpg", genre: "Fantasy, Äventyr, Romantik", ageRating: "11 år", imdbRating: "7.6/10", streaming: { paid: ["Viaplay"], free: [] }},
+                 { realTitle: "The Shape of Water", link: "https://www.imdb.com/title/tt5580390/", description: "På ett hemligt forskningslabb under Kalla kriget bildar en ensam städerska ett unikt band med en amfibisk varelse.", color: "teal", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/9zfwPffUXpBrE1u3mwiyGPhrUp.jpg", genre: "Fantasy, Drama, Romantik", ageRating: "15 år", imdbRating: "7.3/10", streaming: { paid: ["Disney+"], free: [] }},
+                 { realTitle: "Edward Scissorhands", link: "https://www.imdb.com/title/tt0099487/", description: "En konstgjord man med saxar till händer tas in av en förortsfamilj och blir kär i deras tonårsdotter.", color: "gray", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/1RFIbuDyB9i8jAEInXONrnZWn9E.jpg", genre: "Fantasy, Drama, Romantik", ageRating: "11 år", imdbRating: "7.9/10", streaming: { paid: ["Disney+"], free: [] }},
+                 // Kriminal
+                 { realTitle: "Heat", link: "https://www.imdb.com/title/tt0113277/", description: "En grupp professionella bankrånare börjar känna hettan från polisen när de omedvetet lämnar en ledtråd vid sitt senaste rån.", color:"blue", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/rrxlAJmKANkJMPMuC6TLgEDXwFs.jpg", genre: "Kriminal, Action, Thriller", ageRating: "15 år", imdbRating: "8.3/10", streaming: { paid: ["Disney+"], free: [] }},
+                 { realTitle: "Seven", link: "https://www.imdb.com/title/tt0114369/", description: "Två detektiver jagar en seriemördare som använder de sju dödssynderna som motiv.", color: "gray", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/6yoghtyTpznpBik8EngEmJskVUO.jpg", genre: "Kriminal, Drama, Mysterium", ageRating: "15 år", imdbRating: "8.6/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 { realTitle: "The Silence of the Lambs", link: "https://www.imdb.com/title/tt0102926/", description: "En ung FBI-agent måste få hjälp av en fängslad mördare för att fånga en annan.", color: "red", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/uS9m8fcpZNMB2gXUfMYuQoFD1Zu.jpg", genre: "Kriminal, Drama, Thriller", ageRating: "15 år", imdbRating: "8.6/10", streaming: { paid: ["Prime Video"], free: [] }},
+                 { realTitle: "L.A. Confidential", link: "https://www.imdb.com/title/tt0119488/", description: "När korruptionen växer i 1950-talets Los Angeles, måste tre poliser med olika bakgrund avslöja en konspiration.", color: "brown", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/dffcA31VSVfNfLfM86KFsNIo8g0.jpg", genre: "Kriminal, Drama, Mysterium", ageRating: "15 år", imdbRating: "8.2/10", streaming: { paid: ["Disney+"], free: [] }},
+                 { realTitle: "Snatch", link: "https://www.imdb.com/title/tt0208092/", description: "Skrupelfria boxningspromotorer, våldsamma bookmakers, en rysk gangster, inkompetenta amatörrånare och påstådda juvelerare slåss om en stulen diamant.", color: "yellow", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/on9JlbGEccLsYkjeEph2Whm1DIp.jpg", genre: "Kriminal, Komedi", ageRating: "15 år", imdbRating: "8.2/10", streaming: { paid: ["Viaplay"], free: [] }},
+                 // Romantik
+                 { realTitle: "La La Land", link: "https://www.imdb.com/title/tt3783958/", description: "Medan de strävar efter sina karriärer i Los Angeles, utforskar en pianist och en skådespelerska den glädje och smärta som följer med att jaga sina drömmar.", color:"purple", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg", genre: "Romantik, Drama, Komedi", ageRating: "Barntillåten", imdbRating: "8.0/10", streaming: { paid: ["Netflix"], free: [] }},
+                 { realTitle: "Eternal Sunshine of the Spotless Mind", link: "https://www.imdb.com/title/tt0338013/", description: "När deras relation surnar genomgår ett par en medicinsk procedur för att radera varandra från sina minnen.", color:"blue", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/5MwkWH9tYHv3mV9OdYTMR5qreIz.jpg", genre: "Romantik, Drama, Sci-Fi", ageRating: "11 år", imdbRating: "8.3/10", streaming: { paid: ["Netflix"], free: [] }},
+                 { realTitle: "Pride & Prejudice", link: "https://www.imdb.com/title/tt0414387/", description: "Sparks flyger när den livliga Elizabeth Bennet möter den stolte Mr. Darcy.", color: "green", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/61zN5N370A37t1L4M2F3aaW7KK.jpg", genre: "Romantik, Drama", ageRating: "Barntillåten", imdbRating: "7.8/10", streaming: { paid: ["Netflix"], free: [] }},
+                 { realTitle: "Before Sunrise", link: "https://www.imdb.com/title/tt0112471/", description: "En ung man och kvinna möts på ett tåg i Europa och spenderar en kväll tillsammans i Wien.", color: "yellow", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/texLKfo70l6naZsOKfomR5G9x6Z.jpg", genre: "Romantik, Drama", ageRating: "11 år", imdbRating: "8.1/10", streaming: { paid: ["Viaplay"], free: [] }},
+                 { realTitle: "Casablanca", link: "https://www.imdb.com/title/tt0034583/", description: "En cynisk amerikansk expatriat kämpar för att bestämma sig om han ska hjälpa sin före detta älskare och hennes make att fly nazisterna.", color: "black", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/t5M2Ml9HL8Q3PWQCtQKVnbJHSIp.jpg", genre: "Romantik, Drama, Krig", ageRating: "11 år", imdbRating: "8.5/10", streaming: { paid: ["HBO Max"], free: [] }},
+                 // Animation
+                 { realTitle: "Spider-Man: Into the Spider-Verse", link: "https://www.imdb.com/title/tt4633694/", description: "Tonåringen Miles Morales blir Spider-Man i sin verklighet och korsar vägar med fem motsvarigheter från andra dimensioner.", color:"red", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg", genre: "Animation, Action, Äventyr", ageRating: "7 år", imdbRating: "8.4/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 { realTitle: "Spirited Away", link: "https://www.imdb.com/title/tt0245429/", description: "En flicka vandrar in i en magisk värld styrd av andar och häxor under en familjeflytt.", color: "pink", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/39wmItIW2zwAtoO7K4S3r42sBvj.jpg", genre: "Animation, Äventyr, Familj", ageRating: "7 år", imdbRating: "8.6/10", streaming: { paid: ["Netflix"], free: [] }},
+                 { realTitle: "Your Name.", link: "https://www.imdb.com/title/tt5311514/", description: "Två främlingar finner sig själva mystiskt sammankopplade när de börjar byta kroppar.", color: "blue", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/q719jXXEzOoYaps6babgKnONONX.jpg", genre: "Animation, Drama, Fantasy", ageRating: "11 år", imdbRating: "8.4/10", streaming: { paid: ["Netflix"], free: [] }},
+                 { realTitle: "Toy Story", link: "https://www.imdb.com/title/tt0114709/", description: "En cowboydocka känner sig djupt hotad och avundsjuk när en ny rymdäventyrare tar hans plats som favoritleksak.", color: "yellow", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/uXDfjJbdP4ijW5hWSBrPrlKpxab.jpg", genre: "Animation, Äventyr, Komedi", ageRating: "Barntillåten", imdbRating: "8.3/10", streaming: { paid: ["Disney+"], free: [] }},
+                 { realTitle: "Wall-E", link: "https://www.imdb.com/title/tt0910970/", description: "I en avlägsen framtid ger sig en liten sopinsamlingsrobot ut på ett rymdäventyr som avgör mänsklighetens öde.", color: "orange", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/hbhFnRzzg6ZDmm8hl1zQ2E3Cj9.jpg", genre: "Animation, Äventyr, Familj", ageRating: "Barntillåten", imdbRating: "8.4/10", streaming: { paid: ["Disney+"], free: [] }},
+                 // Thriller
+                 { realTitle: "Prisoners", link: "https://www.imdb.com/title/tt1392214/", description: "När hans dotter och hennes vän försvinner tar en desperat far saken i egna händer när polisen följer flera spår.", color:"gray", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/tuZhZ6bPGrSPmL3580UoT6cA7gp.jpg", genre: "Thriller, Drama, Kriminal", ageRating: "15 år", imdbRating: "8.1/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 { realTitle: "Zodiac", link: "https://www.imdb.com/title/tt0443706/", description: "En tecknare från San Francisco blir en amatördetektiv besatt av att spåra Zodiac-mördaren.", color:"blue", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/83IAkJKyjgpEM8q7KJYxMNuD5T1.jpg", genre: "Thriller, Mysterium, Kriminal", ageRating: "15 år", imdbRating: "7.7/10", streaming: { paid: ["Netflix", "Viaplay", "HBO Max"], free: [] }},
+                 { realTitle: "Gone Girl", link: "https://www.imdb.com/title/tt2267998/", description: "Med sin frus försvinnande i fokus hamnar en man i medias strålkastarljus och misstanke.", color:"pink", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/qymaJhucquUwjpb8oiqynMeXnID.jpg", genre: "Thriller, Drama, Mysterium", ageRating: "15 år", imdbRating: "8.1/10", streaming: { paid: ["Netflix", "Disney+"], free: [] }},
+                 { realTitle: "No Country for Old Men", link: "https://www.imdb.com/title/tt0477348/", description: "Våld och kaos följer när en jägare snubblar över en drogdeal som gått fel och mer än två miljoner dollar i kontanter.", color:"brown", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/6d5XOczcNLv05N1xFMt6dLeFZuH.jpg", genre: "Thriller, Drama, Kriminal", ageRating: "15 år", imdbRating: "8.2/10", streaming: { paid: ["Viaplay"], free: [] }},
+                 { realTitle: "Shutter Island", link: "https://www.imdb.com/title/tt1130884/", description: "År 1954 reser en U.S. Marshal för att utreda försvinnandet av en mördare som rymt från ett sjukhus för kriminellt sinnessjuka.", color:"gray", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/4GDy0PHYX3L3oPwt44z7571gKha.jpg", genre: "Thriller, Mysterium", ageRating: "15 år", imdbRating: "8.2/10", streaming: { paid: ["Netflix", "Viaplay"], free: [] }},
+                 // Mysterium
+                 { realTitle: "Knives Out", link: "https://www.imdb.com/title/tt8946378/", description: "En detektiv utreder dödsfallet av patriarken i en excentrisk, stridslysten familj.", color:"brown", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/dAxZAySUQ8skAQ9Cgwd591mADnA.jpg", genre: "Mysterium, Komedi, Kriminal", ageRating: "11 år", imdbRating: "7.9/10", streaming: { paid: ["Netflix"], free: [] }},
+                 { realTitle: "Memento", link: "https://www.imdb.com/title/tt0209144/", description: "En man som lider av korttidsminnesförlust försöker spåra upp sin frus mördare.", color:"black", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/pCiHbXyc1hy3q86nJUnAbz77jXC.jpg", genre: "Mysterium, Thriller", ageRating: "15 år", imdbRating: "8.4/10", streaming: { paid: ["Viaplay"], free: [] }},
+                 { realTitle: "Oldboy", link: "https://www.imdb.com/title/tt0364569/", description: "Efter att ha varit fängslad i 15 år släpps en man och får fem dagar på sig att hitta sin fångvaktare.", color:"purple", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/pWDtjs568ZfOTMbURQBYW7z35s.jpg", genre: "Mysterium, Action, Drama", ageRating: "18 år", imdbRating: "8.4/10", streaming: { paid: ["Prime Video (köp/hyr)"], free: [] }}, // Kontrollera streaming
+                 { realTitle: "The Prestige", link: "https://www.imdb.com/title/tt0482571/", description: "Efter en tragisk olycka blir två scenmagiker besatta av att skapa den ultimata illusionen samtidigt som de offrar allt de har.", color:"gray", posterUrl: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/tRNlZbgNCNOpLpbPEz5L8G8A0JN.jpg", genre: "Mysterium, Drama, Sci-Fi", ageRating: "11 år", imdbRating: "8.5/10", streaming: { paid: ["HBO Max", "Viaplay"], free: [] }}
+            ];
+
+            function createMovieCard(item, type) {
+                const placeholder = `https://placehold.co/400x600/0a0a1a/e0e0e0?text=${encodeURIComponent(item.realTitle)}`;
+                
+                let streamingInfo = '';
+                if (item.streaming.paid && item.streaming.paid.length > 0) {
+                    streamingInfo += `<h4 class="font-semibold text-white mb-1">Betaltjänster</h4><p class="text-xs text-gray-300">${item.streaming.paid.join(', ')}</p>`;
+                }
+                if (item.streaming.free && item.streaming.free.length > 0) {
+                    streamingInfo += `<h4 class="font-semibold text-white mt-2 mb-1">Gratis</h4><p class="text-xs text-gray-300">${item.streaming.free.join(', ')}</p>`;
+                }
+
+                let itemDetails = `
+                    <div class="mt-3 pt-3 border-t border-gray-700">
+                        <p class="text-xs text-gray-300 mb-1"><strong class="font-semibold text-white">Genre:</strong> ${item.genre}</p>
+                        <p class="text-xs text-gray-300 mb-1"><strong class="font-semibold text-white">Åldersgräns:</strong> ${item.ageRating}</p>
+                        <p class="text-xs text-gray-300"><strong class="font-semibold text-white">IMDb Betyg:</strong> ${item.imdbRating}</p>
+                    </div>
+                `;
+                 let cardHeightClass = 'h-96'; // Standardhöjd för alla kort nu
+                
+                 return `
+                    <div class="relative group ${cardHeightClass}">
+                        <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="block w-full h-full bg-black bg-opacity-40 rounded-xl border border-gray-800 transition-all duration-300 overflow-hidden">
+                            <img src="${item.posterUrl}" onerror="this.onerror=null;this.src='${placeholder}';" alt="Poster för ${item.realTitle}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 rounded-xl"> 
+                                <h3 class="text-xl font-bold text-white mb-2">${item.realTitle}</h3>
+                                <div class="info-box-details"> 
+                                     <p class="text-gray-300 text-sm mb-2 leading-snug line-clamp-3">${item.description}</p> 
+                                    <div class="border-t border-gray-600 pt-2 text-xs"> 
+                                        ${streamingInfo}
+                                        ${itemDetails}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // --- Logik för Dagens Rekommendationer ---
+            function updateDailyMovies() {
+                 const dailyMoviesPool = [ // Använder en del av den stora listan för dagens
+                     allAvailableMovies[0], allAvailableMovies[1], allAvailableMovies[2], allAvailableMovies[3],
+                     allAvailableMovies[4], allAvailableMovies[5], allAvailableMovies[6], allAvailableMovies[7]
+                 ];
+                const movieGrid = document.getElementById('movie-grid');
+                if (movieGrid) {
+                    movieGrid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8';
+                    const today = new Date();
+                    const dailySeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+                    const moviesToShow = 4;
+                    // Använder modulo på poolens längd för att välja index
+                    const startIndex = dailySeed % dailyMoviesPool.length; 
+                    let contentHTML = '';
+
+                    for (let i = 0; i < moviesToShow; i++) {
+                         // Använder modulo på poolens längd här också
+                        const movieIndex = (startIndex + i) % dailyMoviesPool.length;
+                        const movie = dailyMoviesPool[movieIndex];
+                        contentHTML += createMovieCard(movie, 'daily');
+                    }
+                    movieGrid.innerHTML = contentHTML;
+                }
+            }
+
+
+            // --- Logik för Genre-val ---
+            function displayMoviesByGenre(selectedGenre) {
+                if (!genreMovieGrid || !genrePlaceholder) return;
+
+                 genreMovieGrid.innerHTML = ''; // Rensa tidigare filmer
+                 
+                 if (!selectedGenre) {
+                    genrePlaceholder.style.display = 'block'; // Visa platshållartext om ingen genre är vald
+                     return;
+                 }
+                
+                genrePlaceholder.style.display = 'none'; // Göm platshållartext
+
+                 // Filtrerar baserat på om den valda genren är den *första* i listan
+                 const filteredMovies = allAvailableMovies.filter(movie => movie.genre.split(', ')[0] === selectedGenre);
+                
+                 if (filteredMovies.length === 0) {
+                     genreMovieGrid.innerHTML = `<p class="text-gray-400 col-span-full">Inga filmer hittades där "${selectedGenre}" är huvudgenre.</p>`;
+                     return;
+                 }
+
+                 let contentHTML = '';
+                 // Visa max 8 filmer
+                 const moviesToDisplay = filteredMovies.slice(0, 8); 
+                 moviesToDisplay.forEach(movie => {
+                     contentHTML += createMovieCard(movie, 'daily'); // Använder samma stil som dagens
+                 });
+                 genreMovieGrid.innerHTML = contentHTML;
+            }
+
+
+            // Event listener för genre-dropdown
+            if (genreSelect) {
+                 genreSelect.addEventListener('change', (event) => {
+                     displayMoviesByGenre(event.target.value);
+                 });
+            }
+
+
+            // --- Logik för sidnavigering ---
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.id;
+                        const activeLink = document.querySelector(`.nav-link[href="#${id}"]`);
+                        
+                        navLinks.forEach(link => link.classList.remove('active'));
+                        if (activeLink) {
+                            activeLink.classList.add('active');
+                        }
+                        history.replaceState(null, null, `#${id}`);
+
+                        const colors = sectionColors[id];
+                        if (colors) {
+                            document.documentElement.style.setProperty('--aurora-color-1', colors[0]);
+                            document.documentElement.style.setProperty('--aurora-color-2', colors[1]);
+                            document.documentElement.style.setProperty('--aurora-color-3', colors[2]);
+                        }
+
+                        // Pausa/återuppta huvudsidans scroll beroende på sektion
+                        if (id === 'genre-val') {
+                            mainContent.style.overflowY = 'hidden'; // Inaktivera huvudscroll
+                        } else {
+                            mainContent.style.overflowY = 'auto'; // Återaktivera huvudscroll
+                        }
+                    }
+                });
+            }, { threshold: 0.7 });
+
+            pages.forEach(page => {
+                observer.observe(page);
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const hash = this.getAttribute('href');
+                    const targetElement = document.querySelector(hash);
+                    if (targetElement) {
+                        // Sätt scroll till auto tillfälligt för att scrollIntoView ska fungera
+                        mainContent.style.overflowY = 'auto'; 
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                        // Sätt tillbaka till hidden om det är genre-sidan, efter en liten fördröjning
+                        if (hash === '#genre-val') {
+                             setTimeout(() => { mainContent.style.overflowY = 'hidden'; }, 700); 
+                        }
+                    }
+                });
+            });
+
+            // Kör funktionerna när sidan laddas
+            updateDailyMovies();
+            // Initial anrop för att visa platshållare i genre-sektionen
+            displayMoviesByGenre(''); 
+        });
+    </script>
+</body>
+</html>
+
