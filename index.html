@@ -139,13 +139,23 @@
                     <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">Blogg: Skapelseprompten</h2>
                     <p class="text-lg text-gray-300 mb-6">Här är prompten som användes för att generera den här hemsidan:</p>
                     <div class="bg-black bg-opacity-40 p-6 rounded-xl border border-gray-700">
-                        <pre class="text-gray-200 whitespace-pre-wrap text-sm md:text-base"><code>Beslutsträd är en av de grundläggande och mest använda metoderna inom Maskininlärning (en gren av AI). De används främst för att göra klassificering (förutsäga kategorier) och regression (förutsäga numeriska värden). En Random Forest baseras på två centrala slumpmässiga processer:
+                        <pre class="text-gray-200 whitespace-pre-wrap text-sm md:text-base"><code>Beslutsträd är en av de grundläggande och mest använda metoderna inom Maskininlärning (en gren av AI). De används främst för att göra klassificering (förutsäga kategorier) och regression (förutsäga numeriska värden). De används främst för att göra klassificering (förutsäga kategorier) och regression (förutsäga numeriska värden). 
+Ett beslutsträd fungerar genom att bryta ner komplexa beslut i en serie av enklare, logiska steg, likt ett flödesschema:
+                            
+Rotnod: Startpunkten som innehåller hela datamängden och där den första frågan ställs.
+Interna noder (Beslutsnoder): Punkter där en fråga ställs om en specifik egenskap i datan (t.ex. "Är temperaturen över 600°C?"). Varje svar leder till en ny gren.
+Grenar: Representerar resultatet av en fråga och leder till nästa nod eller ett slutligt resultat.
+Lövnoder (Slutnoder): Representerar det slutliga beslutet eller förutsägelsen (t.ex. "Godkänd" eller "Underkänd").
+
+
+En Random Forest baseras på två centrala slumpmässiga processer:
 
 Bagging (Bootstrap Aggregating), Istället för att träna ett träd på hela träningsdatan, tränas varje träd i skogen på ett slumpmässigt urval med återläggning (en bootstrap sample) av träningsdatan. Detta säkerställer att varje träd ser en något annorlunda version av datan.
+
 Slumpmässigt Urval av Funktioner (Feature Randomness), Vid varje enskild split i ett träd får algoritmen bara välja den bästa splitten från en slumpmässigt utvald delmängd av de tillgängliga funktionerna (t.ex. bara 3 av 10 egenskaper). Detta tvingar träden att basera sina beslut på olika egenskaper, vilket minskar korrelationen mellan dem.
 Prediktion, När skogen ska göra en förutsägelse, gör alla träd en prediktion. Slutresultatet bestäms sedan av majoritetsröstning (klassificering) eller medelvärdet (regression) av alla träd.
 
-
+----------------------
 i need a website created my gemini and i want it to be complex and not be a white screen only but some nice gui and follow these instructions carfully and make the site beautyful now follow these instructions: Tre undersidor:
 
 Blogg, som innehåller prompten som skapade hemsidan
